@@ -2,8 +2,8 @@
 % German Perea
 % This space is for making predictions for 
 % change of SOC
-M = datmatlab;
-test_data = testnormalized;
+M = trainingnormalized;
+test_data = testnormalized1;
 
 % Comments on data
 % Columns 
@@ -46,15 +46,12 @@ day = str2double(N(:,11)');
 %input = bat;
 %input  = [bat;building];
 
-
-
 input = [bat];
-% Works best at 3 hidden neurons
+
+% Creating our NARX NN
 
 narx_net = narxnet(1:2,1:2,15);
 narx_net.divideFcn = '';
-
-in2 = [test_bat];
 
 % Set the number of minimmum gradient moving step 
 
@@ -86,7 +83,7 @@ test_week = test_da(:,9)';
 test_hour = test_da(:,10)';
 test_day = test_da(:,11)';
 
-rt = t(1:1000);
+in2 = [test_bat];
 
 [narx_net, tr] = train(narxnet,p,t,Pi);
 yp = sim(narx_net,p,Pi);
@@ -105,12 +102,12 @@ ylabel('Normalized deltaSOC')
 
 %% This section covers how to test our model
 
-
-
 % Closed_Loop
 
 
 figure(3)
+
+
 narx_net_closed = closeloop(narx_net);
 y1 = test_deSOC;
 u1 = con2seq(in2);
@@ -119,11 +116,7 @@ yp1 = narx_net_closed(p1, Pi1,Ai1);
 TS = size(t1, 2);
 
 plot(1:TS,cell2mat(t1),'b',1:TS,cell2mat(yp1),'r')
-
-%yp1 = sim(narx_net_closed,Pi1,Ai1);
 e2 = cell2mat(yp1) - cell2mat(t1);
-
-
 
 plot(1:TS,cell2mat(t1),'b',1:TS,cell2mat(yp1),'r')
 legend('True','Predicted')
@@ -133,9 +126,13 @@ ylabel('Normalized deltaSOC')
 % 
 
 % For testing purposes
-
 Y = narx_net_closed(p1, Pi1, Ai1);
-RMSE = sqrt(mse(narx_net_closed, t1, Y));
+
+% Metrics
+MSE = mse(narx_net_closed, t1, Y);
+RMSE = sqrt(MSE);
+% MAE 
+MAE = mae(e2);
 
 
 

@@ -2,9 +2,8 @@
 % German Perea
 % This space is for making predictions for 
 % change of SOC
-
 M = datmatlab;
-
+test_data = testnormalized;
 
 % Comments on data
 % Columns 
@@ -22,8 +21,10 @@ M = datmatlab;
 % Extra Values from table
 N = M{:,:};
 
+
 % Transpose the values
 ts =N(:,1)';
+
 dat = datetime(ts, 'InputFormat','yyyy-MM-dd HH:mm:ss','Format', 'yyyy-MM-dd HH:mm:ss');
 
 % Initially it was  {str2double(N(:,2)')}
@@ -44,32 +45,56 @@ day = str2double(N(:,11)');
 %input = [bat;amps;volts;building;SOC;adjusted];
 %input = bat;
 %input  = [bat;building];
-input = [bat;week];
+
+
+
+input = [bat];
 % Works best at 3 hidden neurons
 
-narx_net = narxnet(1:2,1:2,5);
+narx_net = narxnet(1:2,1:2,15);
 narx_net.divideFcn = '';
+
+in2 = [test_bat];
 
 % Set the number of minimmum gradient moving step 
 
-% We have different methods if we want speficy different requirements
+% We have different methods if we want specify different requirements
 % Regularization
 
 
 narx_net.trainParam.min_grad = 1e-10;
 
-%
+
 [p,Pi,Ai,t] = preparets(narx_net,con2seq(input),{},deSOC);
 
+
 % Input the testing data here 
+% Plugging the testing here
+
 
 % Replace t 
+% The following is for the training data 
 
-[narx_net, tr] = train(narxnet,p,t,Pi, Ai);
+test_da = test_data{:,:};
+test_bat = test_da(:,2)';
+test_SOC =  test_da(:,3)';
+test_building = test_da(:,4)';
+test_adjusted = test_da(:,5)';
+test_volts = test_da(:,7)';
+test_deSOC = con2seq(test_da(:,8)');
+test_week = test_da(:,9)';
+test_hour = test_da(:,10)';
+test_day = test_da(:,11)';
+
+rt = t(1:1000);
+
+[narx_net, tr] = train(narxnet,p,t,Pi);
 yp = sim(narx_net,p,Pi);
 e = cell2mat(yp) - cell2mat(t);
 TS1 = size(t,2);
+
 figure(2)
+
 plot(1:TS1,cell2mat(t),'b',1:TS1,cell2mat(yp),'r')
 legend('True','Predicted')
 title('Inputs: Battery and Week')
@@ -78,39 +103,39 @@ ylabel('Normalized deltaSOC')
 
 
 
+%% This section covers how to test our model
 
 
-% Closed_Loop 
-% 
-% figure(3)
-% narx_net_closed = closeloop(narx_net);
-% y1 = deSOC(1700:2600);
-% u1 = con2seq(input(1700:2600));
-% [p1,Pi1,Ai1,t1] = preparets(narx_net_closed,u1,{},y1);
-% yp1 = sim(narx_net_closed ,Pi1,Ai1);
-% TS = size(t1, 2);
-% 
-% plot(1:TS,cell2mat(t1),'b',1:TS,cell2mat(yp1),'r')
 
-% yp1 = sim(narx_net_closed,Pi1,Ai1);
-% e2 = cell2mat(yp1) - cell2mat(t1);
-% TS = size(t1,2);
+% Closed_Loop
 
 
-% plot(1:TS,cell2mat(t1),'b',1:TS,cell2mat(yp1),'r')
-% legend('True','Predicted')
-% title('deltaSOC: with Battery(kW) as input')
-% xlabel('Row in data')
-% ylabel('Normalized deltaSOC')
+figure(3)
+narx_net_closed = closeloop(narx_net);
+y1 = test_deSOC;
+u1 = con2seq(in2);
+[p1,Pi1,Ai1,t1] = preparets(narx_net_closed,u1,{},y1);
+yp1 = narx_net_closed(p1, Pi1,Ai1);
+TS = size(t1, 2);
+
+plot(1:TS,cell2mat(t1),'b',1:TS,cell2mat(yp1),'r')
+
+%yp1 = sim(narx_net_closed,Pi1,Ai1);
+e2 = cell2mat(yp1) - cell2mat(t1);
+
+
+
+plot(1:TS,cell2mat(t1),'b',1:TS,cell2mat(yp1),'r')
+legend('True','Predicted')
+title('deltaSOC: with Battery(kW) as input')
+xlabel('Row in data')
+ylabel('Normalized deltaSOC')
 % 
 
 % For testing purposes
-Y = narx_net(p, Pi, Ai);
-RMSE = sqrt(mse(narx_net, t, Y));
 
-
-
-
+Y = narx_net_closed(p1, Pi1, Ai1);
+RMSE = sqrt(mse(narx_net_closed, t1, Y));
 
 
 

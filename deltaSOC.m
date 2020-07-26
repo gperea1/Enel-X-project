@@ -55,10 +55,8 @@ narx_net.divideFcn = '';
 
 % Set the number of minimmum gradient moving step 
 
-% We have different methods if we want specify different requirements
-% Regularization
-
-
+% We have different methods if we have specific preferences
+% Setting the gradient 
 narx_net.trainParam.min_grad = 1e-10;
 
 

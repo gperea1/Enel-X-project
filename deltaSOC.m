@@ -66,23 +66,23 @@ narx_net.trainParam.min_grad = 1e-10;
 
 
 % Input the testing data here 
+
 % Plugging the testing here
 
+% The following is the cleaning for our TESTING data 
+test_da = test_data{:,:}; % correcting format
+test_bat = test_da(:,2)'; % Battery 
+test_SOC =  test_da(:,3)'; % State of charge
+test_building = test_da(:,4)'; % Building 
+test_adjusted = test_da(:,5)'; % Adjusted (Building + Battery)
+test_amps = test_da(:,6)'; % Ampere
+test_volts = test_da(:,7)'; % Voltage
+test_deSOC = con2seq(test_da(:,8)'); % Change in State of Charge 
+test_week = test_da(:,9)'; % Week of the year
+test_hour = test_da(:,10)'; % Hour of the day
+test_day = test_da(:,11)'; % Day of the week
 
-% Replace t 
-% The following is for the training data 
-
-test_da = test_data{:,:};
-test_bat = test_da(:,2)';
-test_SOC =  test_da(:,3)';
-test_building = test_da(:,4)';
-test_adjusted = test_da(:,5)';
-test_volts = test_da(:,7)';
-test_deSOC = con2seq(test_da(:,8)');
-test_week = test_da(:,9)';
-test_hour = test_da(:,10)';
-test_day = test_da(:,11)';
-
+% Features we would like to select 
 in2 = [test_bat];
 
 [narx_net, tr] = train(narxnet,p,t,Pi);

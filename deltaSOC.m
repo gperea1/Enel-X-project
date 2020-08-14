@@ -87,6 +87,9 @@ in2 = [test_bat];
 yp = sim(narx_net,p,Pi);
 e = cell2mat(yp) - cell2mat(t);
 TS1 = size(t,2);
+train_mse = mse(e);
+train_rmse = sqrt(train_mse);
+train_mae = mae(e);
 
 figure(2)
 

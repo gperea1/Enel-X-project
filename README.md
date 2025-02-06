@@ -1,4 +1,4 @@
-# industry_project_Enel
+# Machine learning to predict the change of “state of charge” for battery
 
 Stage 1: 
 The Python script is used to do necessary cleaning, separating, and normalizing the data. 
